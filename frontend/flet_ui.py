@@ -1,7 +1,8 @@
 import flet as ft
+import requests
 
 def main(page: ft.Page):
-    
+
     # Definir o tema escuro e fundo escuro
     page.theme_mode = "dark"
     page.bgcolor = "#1a1a1a"  # Fundo escuro
@@ -13,16 +14,21 @@ def main(page: ft.Page):
     def login_clicked(e):
         if username.value == "" or password.value == "":
             status_text.value = "Por favor, preencha todos os campos."
+            status_text.color = "red"
         else:
-            if username.value == "admin" and password.value == "admin":
+            response = requests.post(
+                "http://127.0.0.1:5000/login",
+                json={"username": username.value, "password": password.value}
+            )
+            if response.status_code == 200:
                 status_text.value = "Login bem-sucedido!"
                 status_text.color = "green"
             else:
-                status_text.value = "Credenciais inválidas."
+                status_text.value = response.json().get("message", "Erro no login")
                 status_text.color = "red"
         page.update()
 
-    # Definir campos de texto minimalistas com estilo escuro
+    # Campos de texto
     username = ft.TextField(
         label="Usuário", 
         width=320, 
@@ -47,7 +53,7 @@ def main(page: ft.Page):
         content_padding=ft.Padding(10, 10, 10, 10)
     )
 
-    # Botão de login com cor escura e contraste
+    # Botão de login
     login_button = ft.Container(
         content=ft.ElevatedButton(
             "Entrar", 
@@ -62,13 +68,13 @@ def main(page: ft.Page):
         padding=ft.Padding(0, 10, 0, 10)
     )
 
-    # Mensagem de status para exibir feedback de erros ou sucesso
+    # Mensagem de status
     status_text = ft.Text("", size=14, color="red")
 
-    # Organizar os elementos em uma coluna centralizada com espaçamento
+    # Formulário de login
     login_form = ft.Column(
         [
-            ft.Text("Login", size=32, weight="bold", color="white"),  # Texto branco para contraste
+            ft.Text("Login", size=32, weight="bold", color="white"),  # Título
             username,
             password,
             login_button,
@@ -79,7 +85,7 @@ def main(page: ft.Page):
         spacing=20
     )
 
-    # Adicionar o formulário centralizado na página com sombra suave
+    # Adicionar o formulário centralizado na página
     page.add(
         ft.Container(
             content=login_form,
@@ -97,4 +103,5 @@ def main(page: ft.Page):
         )
     )
 
+# Executar o front-end com Flet
 ft.app(target=main)
